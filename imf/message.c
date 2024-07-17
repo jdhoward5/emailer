@@ -1,7 +1,10 @@
 #include "message.h"
 
-
 /*
+ * Args: buf; unfoldable
+ * -buf: Pointer to a buffer of "bytes" (unsigned chars)
+ * -unfoldable: Boolean, is this line unfoldable or not?
+ * Description:
  * Reads from a buffer until encountering an RFC 5322 compliant line-ending (CRLF)
  * Allocates a new buffer and handles reallocation/resizing
  * Returns NULL on error
@@ -10,7 +13,7 @@
  * NUL (\0) byte will also terminate. This is for stability; presence indicates
  * a malformed (non-compliant) message.
 */
-line * _readline(byte *buf, bool unfoldable)
+line * readline(byte *buf, bool unfoldable)
 {
     size_t c = 0;
     size_t max = 100;
@@ -30,22 +33,16 @@ line * _readline(byte *buf, bool unfoldable)
             i = linebuf+c;
         }
         if (*b == '\0') break;
-        if (unfoldable)
+        if (*b == '\r' && (*(b+1) == '\0' || *(b+1) == '\n'))
         {
-            if (isspace(*b))
+            if (*(b+1) == '\n' && unfoldable && *(b+2) && isspace(*(b+2)))
             {
-                if (*(b+1) == '\0' || *(b+2) == '\0') break;
-                if (*(b+1) == '\r' && *(b+2) == '\n')
-                {
-                    *i = *b;
-                    i++;
-                    c++;
-                    b += 3;
-                    continue;
-                }
+                b += 2;
+            } else
+            {
+                break;
             }
         }
-        if (*b == '\r' && (*(b+1) == '\0' || *(b+1) == '\n')) break;
         *i = *b;
         b++;
         i++;
@@ -66,27 +63,10 @@ line * _readline(byte *buf, bool unfoldable)
     return line_s;
 }
 
-/*
- * RFC 5322 permits very long fields to be "folded" or broken in to multiple lines.
- * The definition states a fold is delimited by any whitespace character 
- * inserted before a CRLF. Therefore, an unfolding operation is to remove CRLF
- * characters wherever they are immediately followed by a CRLF.
-*/
-byte * unfold(byte *buf)
-{
-
-}
-
-void _freeline(line *l)
+void freeline(line *l)
 {
     free(l->s);
     free(l);
-}
-
-message * create_message(void *buf)
-{
-    //TODO
-    return NULL;
 }
 
 /*
@@ -122,7 +102,7 @@ field * parse_field(line *l)
    *(cur+1) = '\0';
    f->name->s = (byte *)realloc(f->name->s, f->name->len+1);
    f->body->s = (byte *)realloc(f->body->s, f->body->len+1);
-   _freeline(l);
+   freeline(l);
 }
 
 void _freefield(field *f)

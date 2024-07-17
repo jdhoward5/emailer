@@ -1,8 +1,3 @@
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-#include "../types.h"
-
 /* Written by 0xEBFE
  * C API for the implementation of the Internet Message Format (IMF)
  * Based on RFC 5322 (and compliant with said RFC)
@@ -21,6 +16,16 @@
 
 #ifndef message_h_
 #define message_h_
+
+#ifdef _WIN32
+#include <Windows.h>
+#include <stdio.h>
+#else
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#endif
+#include "../types.h"
 
 #define MAXLINELEN 1000
 
@@ -45,14 +50,9 @@ typedef struct _message {
     size_t len;
 } message;
 
-/*
- * Attempt to create an RFC 5322 message from an arbitrary byte buffer
-*/
-message * create_message(void *buf);
 
-/*
- * Convert a line into an RFC 5322 header field
-*/
+line * readline(byte *buf, bool unfoldable);
+void freeline(line *l);
 field * parse_field(line *l);
 
 #endif /* message_h_ */
