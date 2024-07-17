@@ -1,4 +1,4 @@
-/* Written by 0xEBFE
+/* Written by Eagle
  * C API for the implementation of the Internet Message Format (IMF)
  * Based on RFC 5322 (and compliant with said RFC)
 */
