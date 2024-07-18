@@ -27,7 +27,8 @@
 #endif
 #include "../types.h"
 
-#define MAXLINELEN 1000
+/* RFC 5322 mandates each line be no more than 998 characters (excluding CRLF) */
+#define MAXLINELEN 998
 
 typedef struct _line {
     byte *s;
@@ -47,12 +48,13 @@ typedef struct _header {
 typedef struct _message {
     header *hdr;
     line **body;
-    size_t len;
+    size_t n_lines;
 } message;
 
 
 line * readline(byte *buf, bool unfoldable);
 void freeline(line *l);
 field * parse_field(line *l);
+void freefield(field *f);
 
 #endif /* message_h_ */
